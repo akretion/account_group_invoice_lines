@@ -23,10 +23,10 @@
 ##############################################################################
 
 from datetime import datetime
-from openerp import Model, api, fields
+from openerp import models, api, fields
 
 
-class account_invoice(Model):
+class account_invoice(models.Model):
     _inherit = 'account.invoice'
 
     @api.multi
@@ -44,7 +44,7 @@ class account_invoice(Model):
             invoice_line.get('date_maturity', "False"))
 
 
-class account_move(Model):
+class account_move(models.Model):
     _inherit = 'account.move'
 
     @api.multi
@@ -53,8 +53,8 @@ class account_move(Model):
         Change name of account move line if we group invoice line
         """
         super(account_move, self).post()
-        invoice = self.env.context['invoice']
-        if invoice.journal_id.group_invoice_lines and invoice.journal_id.group_method == 'account':
+        invoice = self.env.context.get('invoice', False)
+        if invoice and invoice.journal_id.group_invoice_lines and invoice.journal_id.group_method == 'account':
             lang = self.env['res.users'].context_get()['lang']
             res_lang_ids = self.env['res.lang'].search([('code', '=', lang)], limit=1)
             format_date = res_lang_ids.date_format
@@ -65,7 +65,7 @@ class account_move(Model):
         return True
 
 
-class account_journal(Model):
+class account_journal(models.Model):
     _inherit = 'account.journal'
 
     group_method = fields.Selection([
